@@ -13,7 +13,7 @@ fn img_to_vec(path: String) -> Vec<u8> {
 
 pub fn load_train_dataset() -> Vec<Vec<u8>> {
   let mut all_images: Vec<Vec<u8>> = Vec::new();
-  for i in 0..9 {
+  for i in 0..10 {
     let path = format!("MNIST/{}/", i);
     let images: Vec<Vec<u8>> = load_images(&path);
     all_images.extend(images);
