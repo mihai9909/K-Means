@@ -2,11 +2,31 @@ use rand::Rng;
 use std::fs::File;
 use std::io::{self, Write};
 mod data_loader;
+use std::env;
 
 fn main() {
-  // let mut images: Vec<(Vec<u8>, u8)> = data_loader::load_train_dataset(); // vector of tuples containing the image as vector and the class of the image (default 10)
+  let args: Vec<String> = env::args().collect();
 
-  //train(&mut images);
+  if args.len() == 2 && "train".eq(&args[1]) {
+    let mut images: Vec<(Vec<u8>, u8)> = data_loader::load_train_dataset(); // vector of tuples containing the image as vector and the class of the image (default 10)
+
+    train(&mut images);
+    
+    return;
+  } else if args.len() == 2 {
+    let mut centroids: Vec<Vec<u8>> = Vec::new();
+    match data_loader::load_model() {
+        Ok(value) => {
+          centroids = value.clone();
+        }
+        Err(e) => println!("Error: {}", e),
+    }
+  
+    let img_vec: Vec<u8> = data_loader::img_to_vec(args[1].to_string());
+
+    println!("Prediction: {}", classify(&centroids, img_vec));
+    return;
+  }
 
   let mut centroids: Vec<Vec<u8>> = Vec::new();
   match data_loader::load_model() {
@@ -16,14 +36,21 @@ fn main() {
       Err(e) => println!("Error: {}", e),
   }
 
-  let image: Vec<u8> = data_loader::img_to_vec("MNIST/train/6/13.png".to_string());
+  let test_dataset: Vec<(Vec<u8>, u8)> = data_loader::load_test_dataset();
 
-  let class: u8 = classify(centroids, image);
+  let mut correct_guesses: f32 = 0.0;
+  for (img_vec, img_cluster) in test_dataset {
+    let cluster: u8 = classify(&centroids, img_vec);
+    if cluster == img_cluster {
+      correct_guesses += 1.0;
+    }
+  }
 
-  println!("class: {}", class);
+  println!("Correct answers: {}", correct_guesses);
+  println!("Accuracy: {}", correct_guesses/10000.0);
 }
 
-fn classify(centroids: Vec<Vec<u8>>, image: Vec<u8>) -> u8 {
+fn classify(centroids: &Vec<Vec<u8>>, image: Vec<u8>) -> u8 {
   let mut min_dist: f32 = f32::INFINITY;
   let mut class: u8 = 10;
 
@@ -40,7 +67,17 @@ fn classify(centroids: Vec<Vec<u8>>, image: Vec<u8>) -> u8 {
 }
 
 fn train(images: &mut Vec<(Vec<u8>, u8)>) {
-  let mut centroids: Vec<Vec<u8>> = generate_random_centroids();
+  let mut centroids: Vec<Vec<u8>> = Vec::new();
+  centroids.push(data_loader::img_to_vec("MNIST/train/0/6422.png".to_string()));
+  centroids.push(data_loader::img_to_vec("MNIST/train/1/21002.png".to_string()));
+  centroids.push(data_loader::img_to_vec("MNIST/train/2/23691.png".to_string()));
+  centroids.push(data_loader::img_to_vec("MNIST/train/3/21831.png".to_string()));
+  centroids.push(data_loader::img_to_vec("MNIST/train/4/35752.png".to_string()));
+  centroids.push(data_loader::img_to_vec("MNIST/train/5/20601.png".to_string()));
+  centroids.push(data_loader::img_to_vec("MNIST/train/6/59848.png".to_string()));
+  centroids.push(data_loader::img_to_vec("MNIST/train/7/44803.png".to_string()));
+  centroids.push(data_loader::img_to_vec("MNIST/train/8/53464.png".to_string()));
+  centroids.push(data_loader::img_to_vec("MNIST/train/9/5320.png".to_string()));
 
   let mut made_changes: bool = true;
   while made_changes {
@@ -95,7 +132,7 @@ fn train(images: &mut Vec<(Vec<u8>, u8)>) {
     println!("Cluster sizes: {:?}", cluster_sizes);
   }
 
-  save_model(&centroids);
+  let _ = save_model(&centroids);
 }
 
 pub fn save_model(data: &Vec<Vec<u8>>) -> io::Result<()> {

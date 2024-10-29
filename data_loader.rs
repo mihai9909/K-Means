@@ -1,7 +1,6 @@
 use image::ImageReader;
 use std::fs;
 use std::io::{self, BufRead};
-use std::path::Path;
 use std::fs::File;
 
 pub fn img_to_vec(path: String) -> Vec<u8> {
@@ -18,14 +17,25 @@ pub fn load_train_dataset() -> Vec<(Vec<u8>,u8)> {
   let mut all_images: Vec<(Vec<u8>,u8)> = Vec::new();
   for i in 0..10 {
     let path = format!("MNIST/train/{}/", i);
-    let images: Vec<(Vec<u8>,u8)> = load_images(&path);
+    let images: Vec<(Vec<u8>,u8)> = load_images(&path, i);
     all_images.extend(images);
   }
   println!("Number of images: {}", all_images.len());
   all_images
 }
 
-pub fn load_images(directory_path: &str) -> Vec<(Vec<u8>, u8)> {
+pub fn load_test_dataset() -> Vec<(Vec<u8>,u8)> {
+  let mut all_images: Vec<(Vec<u8>,u8)> = Vec::new();
+  for i in 0..10 {
+    let path = format!("MNIST/test/{}/", i);
+    let images: Vec<(Vec<u8>,u8)> = load_images(&path, i);
+    all_images.extend(images);
+  }
+  println!("Number of images: {}", all_images.len());
+  all_images
+}
+
+pub fn load_images(directory_path: &str, cluster: u8) -> Vec<(Vec<u8>, u8)> {
   let mut images: Vec<(Vec<u8>, u8)> = vec![];
 
   match fs::read_dir(directory_path) {
@@ -37,7 +47,7 @@ pub fn load_images(directory_path: &str) -> Vec<(Vec<u8>, u8)> {
             // println!("{:?}", file_name);
             let mut path_to_file = directory_path.to_string(); // Start with a mutable String
             path_to_file.push_str(&file_name.to_string_lossy()); // Append the file name
-            images.push((img_to_vec(path_to_file), 10));
+            images.push((img_to_vec(path_to_file), cluster));
           }
           Err(e) => eprintln!("Error reading entry: {}", e),
         }
