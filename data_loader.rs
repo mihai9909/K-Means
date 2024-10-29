@@ -1,5 +1,7 @@
 use image::ImageReader;
 use std::fs;
+use std::io::{self, BufRead};
+use std::path::Path;
 
 fn img_to_vec(path: String) -> Vec<u8> {
   let img = ImageReader::open(path)
