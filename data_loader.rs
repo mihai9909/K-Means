@@ -2,8 +2,9 @@ use image::ImageReader;
 use std::fs;
 use std::io::{self, BufRead};
 use std::path::Path;
+use std::fs::File;
 
-fn img_to_vec(path: String) -> Vec<u8> {
+pub fn img_to_vec(path: String) -> Vec<u8> {
   let img = ImageReader::open(path)
   .expect("Failed to open image")
   .decode()
@@ -46,6 +47,25 @@ pub fn load_images(directory_path: &str) -> Vec<(Vec<u8>, u8)> {
   }
 
   images
+}
+
+pub fn load_model() -> io::Result<Vec<Vec<u8>>> {
+  let mut vectors = Vec::new();
+
+  let file = File::open("model.txt")?;
+  let reader = io::BufReader::new(file);
+
+  for line in reader.lines() {
+      let line = line?;
+      let line = line.trim_matches(|c| c == '[' || c == ']'); // Remove brackets
+      let nums: Vec<u8> = line.split(',')
+          .filter_map(|s| s.trim().parse().ok())
+          .collect();
+      
+      vectors.push(nums);
+  }
+
+  Ok(vectors)
 }
 
 // fn print_pixel_data(pixels: Vec<u8>) {

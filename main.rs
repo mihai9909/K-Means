@@ -4,27 +4,61 @@ use std::io::{self, Write};
 mod data_loader;
 
 fn main() {
-  let mut images: Vec<(Vec<u8>, u8)> = data_loader::load_train_dataset(); // vector of tuples containing the image as vector and the class of the image (default 10)
+  // let mut images: Vec<(Vec<u8>, u8)> = data_loader::load_train_dataset(); // vector of tuples containing the image as vector and the class of the image (default 10)
 
+  //train(&mut images);
+
+  let mut centroids: Vec<Vec<u8>> = Vec::new();
+  match data_loader::load_model() {
+      Ok(value) => {
+        centroids = value.clone();
+      }
+      Err(e) => println!("Error: {}", e),
+  }
+
+  let image: Vec<u8> = data_loader::img_to_vec("MNIST/train/6/13.png".to_string());
+
+  let class: u8 = classify(centroids, image);
+
+  println!("class: {}", class);
+}
+
+fn classify(centroids: Vec<Vec<u8>>, image: Vec<u8>) -> u8 {
+  let mut min_dist: f32 = f32::INFINITY;
+  let mut class: u8 = 10;
+
+  for j in 0..centroids.len() {
+    let dist: f32 = distance(&image, &centroids[j]);
+    // assign cluster to distance to minimum centroid
+    if dist < min_dist {
+      min_dist = dist;
+      class = j as u8;
+    }
+  }
+
+  class
+}
+
+fn train(images: &mut Vec<(Vec<u8>, u8)>) {
   let mut centroids: Vec<Vec<u8>> = generate_random_centroids();
 
   let mut made_changes: bool = true;
   while made_changes {
     made_changes = false;
-    for i in 0..images.len() {
+    for (image_vec, image_cluster) in images.iter_mut() {
       // compute distance to each centroid
       let mut min_dist: f32 = f32::INFINITY;
-      let prev_cluster = images[i].1;
+      let prev_cluster = *image_cluster;
       for j in 0..centroids.len() {
-        let dist: f32 = distance(&images[i].0, &centroids[j]);
+        let dist: f32 = distance(&image_vec, &centroids[j]);
         // assign cluster to distance to minimum centroid
         if dist < min_dist {
           min_dist = dist;
-          images[i].1 = j as u8;
+          *image_cluster = j as u8;
         }
       }
 
-      if prev_cluster != images[i].1 { // if cluster changed
+      if prev_cluster != *image_cluster { // if cluster changed
         made_changes = true;
       }
     }
@@ -32,18 +66,18 @@ fn main() {
     // compute average
     let mut new_centroids: Vec<Vec<u32>> = vec![vec![0; 784]; 10];
     let mut cluster_sizes: Vec<u32> = vec![0; 10];
-    for img in &images {
-      match img.1 {
-        0=> { sum(&mut new_centroids[0], &img.0); cluster_sizes[0]+=1; },
-        1=> { sum(&mut new_centroids[1], &img.0); cluster_sizes[1]+=1; },
-        2=> { sum(&mut new_centroids[2], &img.0); cluster_sizes[2]+=1; },
-        3=> { sum(&mut new_centroids[3], &img.0); cluster_sizes[3]+=1; },
-        4=> { sum(&mut new_centroids[4], &img.0); cluster_sizes[4]+=1; },
-        5=> { sum(&mut new_centroids[5], &img.0); cluster_sizes[5]+=1; },
-        6=> { sum(&mut new_centroids[6], &img.0); cluster_sizes[6]+=1; },
-        7=> { sum(&mut new_centroids[7], &img.0); cluster_sizes[7]+=1; },
-        8=> { sum(&mut new_centroids[8], &img.0); cluster_sizes[8]+=1; },
-        9=> { sum(&mut new_centroids[9], &img.0); cluster_sizes[9]+=1; },
+    for (image_vec, image_cluster) in images.iter_mut() {
+      match *image_cluster {
+        0=> { sum(&mut new_centroids[0], &image_vec); cluster_sizes[0]+=1; },
+        1=> { sum(&mut new_centroids[1], &image_vec); cluster_sizes[1]+=1; },
+        2=> { sum(&mut new_centroids[2], &image_vec); cluster_sizes[2]+=1; },
+        3=> { sum(&mut new_centroids[3], &image_vec); cluster_sizes[3]+=1; },
+        4=> { sum(&mut new_centroids[4], &image_vec); cluster_sizes[4]+=1; },
+        5=> { sum(&mut new_centroids[5], &image_vec); cluster_sizes[5]+=1; },
+        6=> { sum(&mut new_centroids[6], &image_vec); cluster_sizes[6]+=1; },
+        7=> { sum(&mut new_centroids[7], &image_vec); cluster_sizes[7]+=1; },
+        8=> { sum(&mut new_centroids[8], &image_vec); cluster_sizes[8]+=1; },
+        9=> { sum(&mut new_centroids[9], &image_vec); cluster_sizes[9]+=1; },
         _=> panic!("Invalid cluster!"), 
       }
     }
