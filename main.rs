@@ -24,7 +24,8 @@ fn main() {
   
     let img_vec: Vec<u8> = data_loader::img_to_vec(args[1].to_string());
 
-    println!("Prediction: {}", classify(&centroids, img_vec));
+    let centroid: u8 = classify(&centroids, img_vec);
+    println!("Prediction: {}", centroid);
     return;
   }
 
@@ -40,14 +41,30 @@ fn main() {
 
   let mut correct_guesses: f32 = 0.0;
   for (img_vec, img_cluster) in test_dataset {
-    let cluster: u8 = classify(&centroids, img_vec);
-    if cluster == img_cluster {
+    let centroid_number: u8 = classify(&centroids, img_vec);
+    if map_centroid_to_class(centroid_number) == img_cluster {
       correct_guesses += 1.0;
     }
   }
 
   println!("Correct answers: {}", correct_guesses);
   println!("Accuracy: {}", correct_guesses/10000.0);
+}
+
+fn map_centroid_to_class(centroid: u8) -> u8 {
+  match centroid {
+    0 => 0,
+    1 => 1,
+    2 => 2,
+    3 => 3,
+    4 | 5 | 6 => 4,
+    7 | 8 | 9 | 10 => 5,
+    11 => 6,
+    12 => 7,
+    13 => 8,
+    14 | 15 => 9,
+    _ => 255,
+  }
 }
 
 fn classify(centroids: &Vec<Vec<u8>>, image: Vec<u8>) -> u8 {
@@ -68,16 +85,26 @@ fn classify(centroids: &Vec<Vec<u8>>, image: Vec<u8>) -> u8 {
 
 fn train(images: &mut Vec<(Vec<u8>, u8)>) {
   let mut centroids: Vec<Vec<u8>> = Vec::new();
-  centroids.push(data_loader::img_to_vec("MNIST/train/0/6422.png".to_string()));
-  centroids.push(data_loader::img_to_vec("MNIST/train/1/21002.png".to_string()));
-  centroids.push(data_loader::img_to_vec("MNIST/train/2/23691.png".to_string()));
-  centroids.push(data_loader::img_to_vec("MNIST/train/3/21831.png".to_string()));
-  centroids.push(data_loader::img_to_vec("MNIST/train/4/35752.png".to_string()));
-  centroids.push(data_loader::img_to_vec("MNIST/train/5/20601.png".to_string()));
-  centroids.push(data_loader::img_to_vec("MNIST/train/6/59848.png".to_string()));
-  centroids.push(data_loader::img_to_vec("MNIST/train/7/44803.png".to_string()));
-  centroids.push(data_loader::img_to_vec("MNIST/train/8/53464.png".to_string()));
-  centroids.push(data_loader::img_to_vec("MNIST/train/9/5320.png".to_string()));
+  centroids.push(data_loader::img_to_vec("MNIST/train/0/6422.png".to_string())); // cluster 0
+  centroids.push(data_loader::img_to_vec("MNIST/train/1/21002.png".to_string())); // cluster 1
+  centroids.push(data_loader::img_to_vec("MNIST/train/2/23691.png".to_string())); // cluster 2
+  centroids.push(data_loader::img_to_vec("MNIST/train/3/21831.png".to_string())); // cluster 3
+
+  centroids.push(data_loader::img_to_vec("MNIST/train/4/35752.png".to_string())); // cluster 4 = img 4
+  centroids.push(data_loader::img_to_vec("MNIST/train/4/150.png".to_string())); // cluster 5 = img 4
+  centroids.push(data_loader::img_to_vec("MNIST/train/4/1460.png".to_string())); // cluster 6 = img 4
+
+  centroids.push(data_loader::img_to_vec("MNIST/train/5/20601.png".to_string())); // cluster 7 = img 5
+  centroids.push(data_loader::img_to_vec("MNIST/train/5/1311.png".to_string())); // cluster 8 = img 5
+  centroids.push(data_loader::img_to_vec("MNIST/train/5/31982.png".to_string())); // cluster 9 = img 5
+  centroids.push(data_loader::img_to_vec("MNIST/train/5/31999.png".to_string())); // cluster 10 = img 5
+
+  centroids.push(data_loader::img_to_vec("MNIST/train/6/59848.png".to_string())); // cluster 11 = img 6
+  centroids.push(data_loader::img_to_vec("MNIST/train/7/44803.png".to_string())); // cluster 12 = img 7
+  centroids.push(data_loader::img_to_vec("MNIST/train/8/53464.png".to_string())); // cluster 13 = img 8
+
+  centroids.push(data_loader::img_to_vec("MNIST/train/9/5320.png".to_string())); // cluster 14 = img 9
+  centroids.push(data_loader::img_to_vec("MNIST/train/9/170.png".to_string())); // cluster 15 = img 9
 
   let mut made_changes: bool = true;
   while made_changes {
@@ -101,25 +128,13 @@ fn train(images: &mut Vec<(Vec<u8>, u8)>) {
     }
 
     // compute average
-    let mut new_centroids: Vec<Vec<u32>> = vec![vec![0; 784]; 10];
-    let mut cluster_sizes: Vec<u32> = vec![0; 10];
+    let mut new_centroids: Vec<Vec<u32>> = vec![vec![0; 784]; centroids.len()];
+    let mut cluster_sizes: Vec<u32> = vec![0; centroids.len()];
     for (image_vec, image_cluster) in images.iter_mut() {
-      match *image_cluster {
-        0=> { sum(&mut new_centroids[0], &image_vec); cluster_sizes[0]+=1; },
-        1=> { sum(&mut new_centroids[1], &image_vec); cluster_sizes[1]+=1; },
-        2=> { sum(&mut new_centroids[2], &image_vec); cluster_sizes[2]+=1; },
-        3=> { sum(&mut new_centroids[3], &image_vec); cluster_sizes[3]+=1; },
-        4=> { sum(&mut new_centroids[4], &image_vec); cluster_sizes[4]+=1; },
-        5=> { sum(&mut new_centroids[5], &image_vec); cluster_sizes[5]+=1; },
-        6=> { sum(&mut new_centroids[6], &image_vec); cluster_sizes[6]+=1; },
-        7=> { sum(&mut new_centroids[7], &image_vec); cluster_sizes[7]+=1; },
-        8=> { sum(&mut new_centroids[8], &image_vec); cluster_sizes[8]+=1; },
-        9=> { sum(&mut new_centroids[9], &image_vec); cluster_sizes[9]+=1; },
-        _=> panic!("Invalid cluster!"), 
-      }
+      sum(&mut new_centroids[*image_cluster as usize], &image_vec); cluster_sizes[*image_cluster as usize]+=1;
     }
 
-    for i in 0..=9 {
+    for i in 0..cluster_sizes.len() {
       if cluster_sizes[i] == 0 {
         continue;
       }
