@@ -4,8 +4,8 @@ use std::io::{self, BufRead};
 use std::fs::File;
 
 pub fn img_to_vec(path: String) -> Vec<u8> {
-  let img = ImageReader::open(path)
-  .expect("Failed to open image")
+  let img = ImageReader::open(&path)
+  .unwrap_or_else(|_| panic!("Failed to open image at path: {}", path))
   .decode()
   .expect("Failed to decode image");
 

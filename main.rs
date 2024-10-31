@@ -25,7 +25,7 @@ fn main() {
     let img_vec: Vec<u8> = data_loader::img_to_vec(args[1].to_string());
 
     let centroid: u8 = classify(&centroids, img_vec);
-    println!("Prediction: {}", centroid);
+    println!("Prediction: {}", map_centroid_to_class(centroid));
     return;
   }
 
@@ -53,16 +53,16 @@ fn main() {
 
 fn map_centroid_to_class(centroid: u8) -> u8 {
   match centroid {
-    0 => 0,
-    1 => 1,
-    2 => 2,
-    3 => 3,
-    4 | 5 | 6 => 4,
-    7 | 8 | 9 | 10 => 5,
-    11 => 6,
-    12 => 7,
-    13 => 8,
-    14 | 15 => 9,
+    0..=3 => 0,
+    4..=7 => 1,
+    8..=11 => 2,
+    12..=15 => 3,
+    16..=19 => 4,
+    20..=23 => 5,
+    24..=27 => 6,
+    28..=31 => 7,
+    32..=36 => 8,
+    37..=42 => 9,
     _ => 255,
   }
 }
@@ -86,25 +86,56 @@ fn classify(centroids: &Vec<Vec<u8>>, image: Vec<u8>) -> u8 {
 fn train(images: &mut Vec<(Vec<u8>, u8)>) {
   let mut centroids: Vec<Vec<u8>> = Vec::new();
   centroids.push(data_loader::img_to_vec("MNIST/train/0/6422.png".to_string())); // cluster 0
+  centroids.push(data_loader::img_to_vec("MNIST/train/0/28403.png".to_string())); // cluster 0
+  centroids.push(data_loader::img_to_vec("MNIST/train/0/320.png".to_string())); // cluster 0
+  centroids.push(data_loader::img_to_vec("MNIST/train/0/24715.png".to_string())); // cluster 0
+
   centroids.push(data_loader::img_to_vec("MNIST/train/1/21002.png".to_string())); // cluster 1
+  centroids.push(data_loader::img_to_vec("MNIST/train/1/2086.png".to_string())); // cluster 1
+  centroids.push(data_loader::img_to_vec("MNIST/train/1/3851.png".to_string())); // cluster 1
+  centroids.push(data_loader::img_to_vec("MNIST/train/1/41939.png".to_string())); // cluster 1
+
   centroids.push(data_loader::img_to_vec("MNIST/train/2/23691.png".to_string())); // cluster 2
+  centroids.push(data_loader::img_to_vec("MNIST/train/2/32022.png".to_string())); // cluster 2
+  centroids.push(data_loader::img_to_vec("MNIST/train/2/46386.png".to_string())); // cluster 2
+  centroids.push(data_loader::img_to_vec("MNIST/train/2/57262.png".to_string())); // cluster 2
+
   centroids.push(data_loader::img_to_vec("MNIST/train/3/21831.png".to_string())); // cluster 3
+  centroids.push(data_loader::img_to_vec("MNIST/train/3/3192.png".to_string())); // cluster 3
+  centroids.push(data_loader::img_to_vec("MNIST/train/3/46424.png".to_string())); // cluster 3
+  centroids.push(data_loader::img_to_vec("MNIST/train/3/17148.png".to_string())); // cluster 3
 
-  centroids.push(data_loader::img_to_vec("MNIST/train/4/35752.png".to_string())); // cluster 4 = img 4
-  centroids.push(data_loader::img_to_vec("MNIST/train/4/150.png".to_string())); // cluster 5 = img 4
-  centroids.push(data_loader::img_to_vec("MNIST/train/4/1460.png".to_string())); // cluster 6 = img 4
+  centroids.push(data_loader::img_to_vec("MNIST/train/4/35752.png".to_string())); // img 4
+  centroids.push(data_loader::img_to_vec("MNIST/train/4/150.png".to_string())); // img 4
+  centroids.push(data_loader::img_to_vec("MNIST/train/4/1460.png".to_string())); // img 4
+  centroids.push(data_loader::img_to_vec("MNIST/train/4/49480.png".to_string())); // img 4
 
-  centroids.push(data_loader::img_to_vec("MNIST/train/5/20601.png".to_string())); // cluster 7 = img 5
-  centroids.push(data_loader::img_to_vec("MNIST/train/5/1311.png".to_string())); // cluster 8 = img 5
-  centroids.push(data_loader::img_to_vec("MNIST/train/5/31982.png".to_string())); // cluster 9 = img 5
-  centroids.push(data_loader::img_to_vec("MNIST/train/5/31999.png".to_string())); // cluster 10 = img 5
+  centroids.push(data_loader::img_to_vec("MNIST/train/5/20601.png".to_string())); // img 5
+  centroids.push(data_loader::img_to_vec("MNIST/train/5/1311.png".to_string())); // img 5
+  centroids.push(data_loader::img_to_vec("MNIST/train/5/31982.png".to_string())); // img 5
+  centroids.push(data_loader::img_to_vec("MNIST/train/5/31999.png".to_string())); // img 5
 
-  centroids.push(data_loader::img_to_vec("MNIST/train/6/59848.png".to_string())); // cluster 11 = img 6
-  centroids.push(data_loader::img_to_vec("MNIST/train/7/44803.png".to_string())); // cluster 12 = img 7
-  centroids.push(data_loader::img_to_vec("MNIST/train/8/53464.png".to_string())); // cluster 13 = img 8
+  centroids.push(data_loader::img_to_vec("MNIST/train/6/59848.png".to_string())); // img 6
+  centroids.push(data_loader::img_to_vec("MNIST/train/6/2822.png".to_string())); // img 6
+  centroids.push(data_loader::img_to_vec("MNIST/train/6/21117.png".to_string())); // img 6
+  centroids.push(data_loader::img_to_vec("MNIST/train/6/13865.png".to_string())); // img 6
 
-  centroids.push(data_loader::img_to_vec("MNIST/train/9/5320.png".to_string())); // cluster 14 = img 9
-  centroids.push(data_loader::img_to_vec("MNIST/train/9/170.png".to_string())); // cluster 15 = img 9
+  centroids.push(data_loader::img_to_vec("MNIST/train/7/44803.png".to_string())); // img 7
+  centroids.push(data_loader::img_to_vec("MNIST/train/7/32173.png".to_string())); // img 7
+  centroids.push(data_loader::img_to_vec("MNIST/train/7/50244.png".to_string())); // img 7
+  centroids.push(data_loader::img_to_vec("MNIST/train/7/4317.png".to_string())); // img 7
+
+  centroids.push(data_loader::img_to_vec("MNIST/train/8/53464.png".to_string())); // img 8
+  centroids.push(data_loader::img_to_vec("MNIST/train/8/42988.png".to_string())); // img 8
+  centroids.push(data_loader::img_to_vec("MNIST/train/8/17364.png".to_string())); // img 8
+  centroids.push(data_loader::img_to_vec("MNIST/train/8/3918.png".to_string())); // img 8
+  centroids.push(data_loader::img_to_vec("MNIST/train/8/32110.png".to_string())); // img 8
+
+  centroids.push(data_loader::img_to_vec("MNIST/train/9/5320.png".to_string())); // img 9
+  centroids.push(data_loader::img_to_vec("MNIST/train/9/20360.png".to_string())); // img 9
+  centroids.push(data_loader::img_to_vec("MNIST/train/9/3481.png".to_string())); // img 9
+  centroids.push(data_loader::img_to_vec("MNIST/train/9/170.png".to_string())); // img 9
+  centroids.push(data_loader::img_to_vec("MNIST/train/9/38247.png".to_string())); // img 9
 
   let mut made_changes: bool = true;
   while made_changes {
