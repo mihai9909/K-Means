@@ -2,6 +2,7 @@ use image::ImageReader;
 use std::fs;
 use std::io::{self, BufRead};
 use std::fs::File;
+use rand::seq::SliceRandom;
 
 pub fn img_to_vec(path: String) -> Vec<u8> {
   let img = ImageReader::open(&path)
@@ -24,6 +25,29 @@ pub fn load_train_dataset() -> Vec<(Vec<u8>,u8)> {
   all_images
 }
 
+pub fn get_random_img(directory_path: &str) -> String {
+    let mut img_path = String::new();
+
+    match fs::read_dir(directory_path) {
+        Ok(entries) => {
+            let files: Vec<_> = entries
+                .filter_map(|entry| entry.ok())
+                .filter(|entry| entry.path().is_file())
+                .map(|entry| entry.path().to_string_lossy().to_string())
+                .collect();
+
+            if let Some(random_file) = files.choose(&mut rand::thread_rng()) {
+                img_path = random_file.clone();
+            } else {
+                eprintln!("No files found in directory: {}", directory_path);
+            }
+        }
+        Err(e) => eprintln!("Failed to read directory: {}", e),
+    }
+
+    img_path
+}
+
 pub fn load_test_dataset() -> Vec<(Vec<u8>,u8)> {
   let mut all_images: Vec<(Vec<u8>,u8)> = Vec::new();
   for i in 0..10 {
@@ -35,7 +59,7 @@ pub fn load_test_dataset() -> Vec<(Vec<u8>,u8)> {
   all_images
 }
 
-pub fn load_images(directory_path: &str, cluster: u8) -> Vec<(Vec<u8>, u8)> {
+pub fn load_images(directory_path: &str, class: u8) -> Vec<(Vec<u8>, u8)> {
   let mut images: Vec<(Vec<u8>, u8)> = vec![];
 
   match fs::read_dir(directory_path) {
@@ -47,7 +71,7 @@ pub fn load_images(directory_path: &str, cluster: u8) -> Vec<(Vec<u8>, u8)> {
             // println!("{:?}", file_name);
             let mut path_to_file = directory_path.to_string(); // Start with a mutable String
             path_to_file.push_str(&file_name.to_string_lossy()); // Append the file name
-            images.push((img_to_vec(path_to_file), cluster));
+            images.push((img_to_vec(path_to_file), class));
           }
           Err(e) => eprintln!("Error reading entry: {}", e),
         }
